@@ -15,7 +15,7 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.map cimport map as cmap
 from libcpp.set cimport set
-
+from libcpp cimport bool
 
 cdef extern from "GeoTessModelUtils.h" namespace "geotess":
     cdef cppclass GeoTessModelUtils:
@@ -31,10 +31,10 @@ cdef extern from "GeoTessUtils.h" namespace "geotess":
     cdef cppclass GeoTessUtils:
         GeoTessUtils() except +
         # a lot of these methods are static, so we use @staticmethod
-        # https://cython.readthedocs.io/en/latest/src/userguide/wrapping_CPlusPlus.html#static-member-method
+        # https:#cython.readthedocs.io/en/latest/src/userguide/wrapping_CPlusPlus.html#static-member-method
         # This makes them like functions within a "GeoTessUtils" Python module
         # instead of methods on a class instance.
-        # try to match common C++ exceptions to Python ones: https://cython.readthedocs.io/en/latest/src/userguide/wrapping_CPlusPlus.html#exceptions
+        # try to match common C++ exceptions to Python ones: https:#cython.readthedocs.io/en/latest/src/userguide/wrapping_CPlusPlus.html#exceptions
         @staticmethod
         double getLatDegrees(const double *const v)
         @staticmethod
@@ -65,7 +65,7 @@ cdef extern from "GeoTessGrid.h" namespace "geotess":
         int getVertexIndex(int triangle, int corner) const
         # had to remove a "const" from the def
         # Cython can't use 'const' in all the same places as C++
-        # http://stackoverflow.com/questions/23873652/how-to-use-const-in-cython
+        # http:#stackoverflow.com/questions/23873652/how-to-use-const-in-cython
         double *const * getVertices() const
 
 cdef extern from "GeoTessMetaData.h" namespace "geotess":
@@ -235,7 +235,7 @@ cdef extern from "GeoTessInterpolatorType.h" namespace "geotess":
         GeoTessInterpolatorType* valueOf(const string &s)
         int size() const
         # I can't seem to access public const members in Cython
-        # https://stackoverflow.com/a/46998685/745557
+        # https:#stackoverflow.com/a/46998685/745557
         # const GeoTessInterpolatorType LINEAR
         # const GeoTessInterpolatorType NATURAL_NEIGHBOR
         # const GeoTessInterpolatorType CUBIC_SPLINE
@@ -250,9 +250,27 @@ cdef extern from "GeoTessInterpolatorType.h" namespace "geotess":
 #        int ordinal() const
 
 # GeoTessModelAmplitude is a subclass of GeoTessModel.  Hence the longer name.
-# https://altugkarakurt.github.io/how-to-wrap-polymorphic-cpp-classes-with-cython
+# https:#altugkarakurt.github.io/how-to-wrap-polymorphic-cpp-classes-with-cython
+# cdef extern from "GeoTessModelAmplitude.h" namespace "geotess":
+#     cdef cppclass GeoTessModelAmplitude(GeoTessModel):
+#         GeoTessModelAmplitude() except +
+#         GeoTessModelAmplitude(const string& modelInputFile);
+#         float getSiteTrans(const string& station, const string& channel, const string& band)
+
+
+
+# GeoTessModelAmplitude is a subclass of GeoTessModel.  Hence the longer name.
+# https:#altugkarakurt.github.io/how-to-wrap-polymorphic-cpp-classes-with-cython
 cdef extern from "GeoTessModelAmplitude.h" namespace "geotess":
     cdef cppclass GeoTessModelAmplitude(GeoTessModel):
         GeoTessModelAmplitude() except +
-        GeoTessModelAmplitude(const string& modelInputFile);
-        float getSiteTrans(const string& station, const string& channel, const string& band)
+        GeoTessModelAmplitude(const string& modelInputFile) except +
+        float getSiteTrans(const string& station, const string& channel, const string& band) except +
+        double getPathCorrection(const string& station, const string& channel, const string& band, const double& rcvLat, const double& rcvLon,const double& sourceLat, const double& sourceLon) except +
+
+# cdef extern from "GeoTessModelAmplitudeDeveloper.h" namespace "geotess":
+#     cdef cppclass GeoTessModelAmplitudeDeveloper(GeoTessModelAmplitude):
+#         GeoTessModelAmplitudeDeveloper() except +
+        
+
+
