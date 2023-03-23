@@ -3,6 +3,7 @@
 #cython: language_level=3
 #cython: c_string_type=unicode
 #cython: c_string_encoding=utf-8
+
 """
 This module exposes Cython GeoTess functionality from the pxd file into Python.
 
@@ -129,9 +130,12 @@ from libcpp.vector cimport vector
 from libcpp.map cimport map as cmap
 from libcpp.limits cimport numeric_limits
 from libcpp.set cimport set
+from libcpp cimport bool
 
 cimport clibgeotess as clib
 import geotess.exc as exc
+
+
 
 
 cdef class GeoTessUtils:
@@ -1062,7 +1066,6 @@ cdef class GeoTessModel:
             -2 on errors packing ndarray in c++ vectors
             -3 on error setting profile values
         """
-        import numpy as np
         cdef vector[float] cradii
         cdef vector[vector[float]] cvalues
         cdef vector[float] ctmp
@@ -1911,7 +1914,6 @@ cdef class GeoTessModel:
         relies on numpy as np
 
         """
-        import numpy as np
         lons = np.arange(minlon, maxlon, dLon)
         lats = np.arange(minlat, maxlat, dLat)
         outData = np.zeros((len(lons), len(lats)))
@@ -1932,7 +1934,6 @@ cdef class GeoTessModel:
             maxdepth: maximum depth (km)
             dz: sampling in depth (km)
         """
-        import numpy as np
         depths = np.arange(mindepth, maxdepth, dz)
         outData = np.zeros((len(depths),))
         for idepth, depth in enumerate(depths):
@@ -1947,7 +1948,6 @@ cdef class GeoTessModel:
         Extracts from geotess object to a set of 3 location vectors and an attribute matrix
         returns longitude vector, latitude vector, radius vector, and data matrix
         """
-        import numpy as np
         grid = self.getGrid()
         ellipsoid = self.getEarthShape()
 
@@ -2014,11 +2014,12 @@ cdef class GeoTessModelAmplitude(GeoTessModel):
     cdef clib.GeoTessModelAmplitude *thisampptr
 
     def __cinit__(self, modelInputFile=None):
+        # GeoTessModelAmplitude() is now protected so we can't use it here.
         if modelInputFile is None:
-            self.thisampptr = new clib.GeoTessModelAmplitude()
+            self.thisampptr = new clib.GeoTessModelAmplitude() #removed new
         else:
-            self.thisampptr = new clib.GeoTessModelAmplitude(modelInputFile)
-
+            self.thisampptr = new clib.GeoTessModelAmplitude(modelInputFile) #removed new
+    
     def __dealloc__(self):
         if self.thisampptr != NULL:
             del self.thisampptr
@@ -2049,6 +2050,25 @@ cdef class GeoTessModelAmplitude(GeoTessModel):
 
         return out
 
+    def getPathCorrection(self, const string& station, const string& channel, const string& band,
+            const double& rcvLat, const double& rcvLon,
+            const double& sourceLat, const double& sourceLon):
+        '''Retrieve Q effect on amplitude for a specified source-receiver path. 
+        or NaN if not supported.
+            
+                    Parameters
+                    ----------
+                    station : str, channel : str, band : str, rcvLat : float, rcvLon : float, 
+                                sourceLat : float, sourceLon  : float
+                    Returns
+                    -------
+                    double or None
+                        Path Correction.'''
+
+        cdef double path_correction = self.thisampptr.getPathCorrection(station, channel, band, rcvLat, rcvLon, sourceLat, sourceLon)
+
+
+        return path_correction
 
 # GeoTessEnumType is protected so we can't use it here.
 #cdef class GeoTessEnumType():
